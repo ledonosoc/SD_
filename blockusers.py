@@ -28,6 +28,8 @@ import json
 import ccloud_lib
 import time
 
+exec(open("API_blocked.py").read())
+
 delivered_records = 0
 blocklist = json.dumps({})
 

@@ -1,5 +1,6 @@
 from flask import Flask, request
 import json
+import time
 
 # create the Flask app
 app = Flask(__name__)
@@ -17,6 +18,7 @@ def GetBlocked(blocklist):
 @app.route('/blocked')
 def blocked():
     blocklist = open('BlockedUsers.json','r')
+    blocklist = json.dump(blocklist)
     return GetBlocked(blocklist)
 
 if __name__ == '__main__':
