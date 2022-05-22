@@ -23,8 +23,10 @@
 # =============================================================================
 
 from confluent_kafka import Producer, KafkaError
+from confluent_kafka import Consumer
 import json
 import ccloud_lib
+import time
 
 
 if __name__ == '__main__':
@@ -59,15 +61,60 @@ if __name__ == '__main__':
             print("Produced record to topic {} partition [{}] @ offset {}"
                   .format(msg.topic(), msg.partition(), msg.offset()))
 
-    for n in range(10):
-        record_key = "alice"
-        record_value = json.dumps({'count': n})
+    def producir(usuario,contador):
+        record_key = usuario
+        record_value = json.dumps({'count': contador+1, 'tiempo': time.time()})
         print("Producing record: {}\t{}".format(record_key, record_value))
         producer.produce(topic, key=record_key, value=record_value, on_delivery=acked)
         # p.poll() serves delivery reports (on_delivery)
         # from previous produce() calls.
         producer.poll(0)
 
-    producer.flush()
+        producer.flush()
 
-    print("{} messages were produced to topic {}!".format(delivered_records, topic))
+        print("{} messages were produced to topic {}!".format(delivered_records, topic))
+
+    def consumir(usuario):
+        # Create Consumer instance
+        # 'auto.offset.reset=earliest' to start reading from the beginning of the
+        #   topic if no committed offsets exist
+        consumer_conf = ccloud_lib.pop_schema_registry_params_from_config(conf)
+        consumer_conf['group.id'] = 'python_example_group_1'
+        consumer_conf['auto.offset.reset'] = 'earliest'
+        consumer = Consumer(consumer_conf)
+
+        # Subscribe to topic
+        consumer.subscribe([topic])
+
+        # Process messages
+        total_count = 0
+        try:
+            while True:
+                msg = consumer.poll(1.0)
+                if msg is None:
+                    # No message available within timeout.
+                    # Initial message consumption may take up to
+                    # `session.timeout.ms` for the consumer group to
+                    # rebalance and start consuming
+                    print("Waiting for message or event/error in poll()")
+                    return 0
+                elif msg.error():
+                    print('error: {}'.format(msg.error()))
+                elif msg.key()==usuario:
+                    # Check for Kafka message
+                    record_key = msg.key()
+                    record_value = msg.value()
+                    data = json.loads(record_value)
+                    count = data['count']
+                    total_count += count
+                    print("Consumed record with key {} and value {}, \
+                        and updated total count to {}"
+                        .format(record_key, record_value, total_count))
+                else:
+                    continue
+                return total_count
+        except KeyboardInterrupt:
+            pass
+        finally:
+            # Leave group and commit final offsets
+            consumer.close()
