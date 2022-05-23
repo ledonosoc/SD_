@@ -86,7 +86,7 @@ def login_user():
     return "ok", 200
 @app.route('/blocked-users', methods=['GET'])
 def get_blocked():
-    lista = json.dumps(Consumer.Consumer())
+    lista = json.dumps({"users-blocked":Consumer.Consumer()})
     return lista
 
 if __name__ == '__main__':
