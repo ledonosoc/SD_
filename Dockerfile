@@ -5,4 +5,4 @@ RUN pip3 install -U -r /tmp/requirements.txt
 
 COPY *.py ./
 COPY librdkafka.config librdkafka.config
-CMD python ./blockusers.py -f ./librdkafka.config -t LoginsErrados
+CMD python ./app.py

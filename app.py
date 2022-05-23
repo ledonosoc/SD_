@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import json
-
+import Producer
+import Consumer
 
 app = Flask(__name__)
 
@@ -79,12 +80,14 @@ def login_user():
                         print('usuario correctamente logeado!')
                     else:
                         print('(pass)Una de las credenciales ingresada incorrectamente.')
+                        Producer.Producer(user)
                 else: 
                     print('(user)Una de las credenciales ingresada incorrectamente.')
     return "ok", 200
 @app.route('/blocked-users', methods=['GET'])
 def get_blocked():
-    return 0
+    lista = json.dumps(Consumer.Consumer())
+    return lista
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
