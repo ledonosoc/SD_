@@ -61,7 +61,7 @@ def Consumir():
             elif msg.error():
                 print('error: {}'.format(msg.error()))
             else:
-                # Check for Kafka message
+            # Check for Kafka message
                 record_key = msg.key()
                 record_value = msg.value()
                 data = json.loads(record_value)
@@ -70,12 +70,10 @@ def Consumir():
                 print("Consumed record with key {} and value {}, \
                       and updated total count to {}"
                       .format(record_key, record_value, total_count))
+                sususers.append(record_key)
     except KeyboardInterrupt:
         pass
     finally:
         # Leave group and commit final offsets
         consumer.close()
-        for i in sususers:
-            if 4 < sususers.count(i):
-                blockedUsers.append(i)
-        return blockedUsers
+    
