@@ -22,18 +22,17 @@
 #
 # =============================================================================
 
-from urllib.parse import uses_params
 from confluent_kafka import Producer, KafkaError
 import json
 import ccloud_lib
-import time
 
 
-def Producir(User):
+if __name__ == '__main__':
 
     # Read arguments and configurations and initialize
-    config_file = 'librdkafka.config'
-    topic = "Usuarios"
+    args = ccloud_lib.parse_args()
+    config_file = args.config_file
+    topic = args.topic
     conf = ccloud_lib.read_ccloud_config(config_file)
 
     # Create Producer instance
@@ -43,25 +42,32 @@ def Producir(User):
     # Create topic if needed
     ccloud_lib.create_topic(conf, topic)
 
+    delivered_records = 0
+
     # Optional per-message on_delivery handler (triggered by poll() or flush())
     # when a message has been successfully delivered or
     # permanently failed delivery (after retries).
     def acked(err, msg):
+        global delivered_records
         """Delivery report handler called on
         successful or failed delivery of message
         """
         if err is not None:
-            print("Error al ingresar usuario: {}".format(err))
+            print("Failed to deliver message: {}".format(err))
         else:
-            print("Usuario [{}] tiempo de acceso {} ingresado correctamente"
-                  .format(msg.partition(), msg.offset()))
+            delivered_records += 1
+            print("Produced record to topic {} partition [{}] @ offset {}"
+                  .format(msg.topic(), msg.partition(), msg.offset()))
 
-    record_key = User
-    record_value = json.dumps({'time': time.time()})
-    print("Ingresando al usuario: {}\t{}".format(record_key, record_value))
-    producer.produce(topic, key=record_key, value=record_value, on_delivery=acked)
-    # p.poll() serves delivery reports (on_delivery)
-    # from previous produce() calls.
-    producer.poll(0)
+    for n in range(10):
+        record_key = "alice"
+        record_value = json.dumps({'count': n})
+        print("Producing record: {}\t{}".format(record_key, record_value))
+        producer.produce(topic, key=record_key, value=record_value, on_delivery=acked)
+        # p.poll() serves delivery reports (on_delivery)
+        # from previous produce() calls.
+        producer.poll(0)
 
     producer.flush()
+
+    print("{} messages were produced to topic {}!".format(delivered_records, topic))
