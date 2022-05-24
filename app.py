@@ -80,14 +80,16 @@ def login_user():
                         print('usuario correctamente logeado!')
                     else:
                         print('(pass)Una de las credenciales ingresada incorrectamente.')
-                        exec(open('Consumer.py').read())
+                        Producer.Producir(user)
+                        return "wrong pass",201
                 else: 
                     print('(user)Una de las credenciales ingresada incorrectamente.')
+                    #return "user not found",202
     return "ok", 200
-@app.route('/blocked-users', methods=['GET'])
+@app.route('/blocked', methods=['GET'])
 def get_blocked():
     lista = json.dumps({"users-blocked":Consumer.Consumir()})
     return lista
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
