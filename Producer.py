@@ -29,10 +29,10 @@ import ccloud_lib
 import time
 
 
-def Producer(User):
+def Producir(User):
 
     # Read arguments and configurations and initialize
-    config_file = open('librdkafka.config','r')
+    config_file = 'librdkafka.config'
     topic = "Usuarios"
     conf = ccloud_lib.read_ccloud_config(config_file)
 

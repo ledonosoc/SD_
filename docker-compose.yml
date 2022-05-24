@@ -25,7 +25,8 @@ services:
   api:
     container_name: API
     build: .
-
+    ports:
+      - "5000:5000"
 volumes:
   zookeeper_data:
     driver: local
